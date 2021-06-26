@@ -53,11 +53,11 @@ print "downloading pdfs"
 for-each pair drugs [
     probe pair/1
     print unspaced [base pair/2]
-    if error? try [
-        write to file! pair/2 read to url! join base pair/2
-    ] then [
-        write to file! pair/2 read join alternate-base pair/2
-    ]
+    location1: to url! join base pair/2
+    location2: join alternate-base pair/2
+    file: if exists? location1 [ location1 ]
+    else [ location2 ]
+    write to file! pair/2 read file
 ]
 
 ; now convert each pdf to png and eps
