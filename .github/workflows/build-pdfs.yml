@@ -1,4 +1,5 @@
-# This is a basic workflow to help you get started with Actions
+# GitHub Workflow, Yaml file
+# https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions
 
 name: Build New PDFs
 
@@ -13,24 +14,110 @@ on:
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
-# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+# A workflow run is made up of one or more jobs that can run sequentially
+# or in parallel
 jobs:
   # This workflow contains a single job called "build"
   build:
     # The type of runner that the job will run on
     runs-on: ubuntu-latest
 
-    # Steps represent a sequence of tasks that will be executed as part of the job
+    env:
+      AWS_S3_BUCKET_NAME: 8th-dev
+
+    # Steps represent a sequence of tasks that are executed as part of the job
     steps:
-      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - uses: actions/checkout@v2
 
-      # Runs a single command using the runners shell
-      - name: Run a one-line script
-        run: echo Hello, world!
+ #====# CHECKOUT STEPS #=====================================================#
 
-      # Runs a set of commands using the runners shell
-      - name: Run a multi-line script
-        run: |
-          echo Add other actions to build,
-          echo test, and deploy your project.
+    # Checks-out repository under $GITHUB_WORKSPACE, so your job can access it
+
+    - uses: actions/checkout@v2
+
+ #====# INSTALL PACKAGES #===================================================#
+
+    - name: Install Poppler Utilities
+      run: sudo apt install poppler-utils
+
+    - name: Install Ghostscript
+      run: sudo apt install ghostscript
+
+    - name: Install Rename
+      run: sudo apt install rename
+
+ #====# INSTALL REN-C INTERPRETER #==========================================#
+
+    # Use the debug build ("checked") interpreter so that this script is more
+    # useful for feedback to the Ren-C project.
+
+    - name: Download and Cache the Interpreter
+      uses: metaeducation/ren-c-action@release
+      with:
+        checked: true
+
+ #====# INSTALL R3 INTERPRETER #=============================================#
+
+    - name: Grab the pdfs
+      run: |
+        r3 scripts/grab-pdfs.reb
+
+    - name: List outputs From Build Products
+      run: ls
+
+    - name: Compress Images
+      run: |
+        mkdir images
+        mv *.pdf images/
+        mv *.eps images/
+        mv *.png images/
+        zip -r pdfs images/
+        mv pdfs.zip images/
+
+    - name: List Final Contents of Images Directory
+      run: ls images/
+
+#====# MAKE IMAGES AVAILABLE AS BUILD ARTIFACT #==============================#
+
+    # GitHub Actions offers temporary storage which is intended to let you pass
+    # artifacts of builds between jobs.  It can also be used for looking at
+    # results in the build log after the jobs have ended.
+    #
+    # This is a temporary storage so it's not where you want to keep things
+    # long term.
+    #
+    # https://github.com/actions/upload-artifact
+    #
+    - name: Upload Zip file to Temporary Artifact Storage on GitHub Actions
+      uses: actions/upload-artifact@v2
+      with:
+        name: pdfs.zip
+        path: images/pdfs.zip
+
+#====# UPLOAD IMAGES TO S3 #==================================================#
+
+    # This action configures the AWS keys stored in GitHub's "Secrets" for
+    # the repository so that `aws s3` allows us to do uploads, without needing
+    # to publish any passwords publicly:
+    #
+    # https://github.com/aws-actions/configure-aws-credentials
+    #
+    # !!! Note: the bucket name being written to is `8th-dev`, under the
+    # directory `images`
+    #
+    - name: Configure AWS Credentials
+      if: github.ref == 'refs/heads/master'  # see notes on DEPLOY STEPS
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        aws-access-key-id: ${{ secrets.EIGHTH_AWS_ACCESS_KEY }}
+        aws-secret-access-key: ${{ secrets.EIGHTH_AWS_SECRET_KEY }}
+        aws-region: us-east-1
+
+    - name: Deploy Images
+      if: github.ref == 'refs/heads/master'  # see notes on DEPLOY STEPS
+      run: |
+        cd images
+        mime_type="application/zip"
+
+        local=pdfs.zip
+        remote=s3://${AWS_S3_BUCKET_NAME}/images/pdfs.zip
+        aws s3 cp $local $remote --content-type $mime_type
