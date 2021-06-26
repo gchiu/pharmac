@@ -10,6 +10,7 @@ pdfs: https://schedule.pharmac.govt.nz/SAForms.php
 
 ; and this is their download directory
 base: to url! unspaced [https://schedule.pharmac.govt.nz/ now/year "/" next form (100 + now/month) "/01/"]
+alternate-base: https://schedule.pharmac.govt.nz/latest/
 
 ; these are the drugs we use and are interested in.  Check their page (pdfs) to see what other drugs are supported
 wanted: ["Adalimumab" "Etanercept" "Teriparatide" "Zoledronic acid inj 0.05 mg per ml, 100 ml" "Tocilizumab" "Secukinumab"]
@@ -52,7 +53,11 @@ print "downloading pdfs"
 for-each pair drugs [
     probe pair/1
     print unspaced [base pair/2]
-    write to file! pair/2 read to url! join base pair/2
+    if error? try [
+        write to file! pair/2 read to url! join base pair/2
+    ] then [
+        write to file! pair/2 read join alternate-base pair/2
+    ]
 ]
 
 ; now convert each pdf to png and eps
