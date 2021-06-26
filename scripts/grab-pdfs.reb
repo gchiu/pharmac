@@ -19,7 +19,7 @@ wanted: ["Adalimumab" "Etanercept" "Teriparatide" "Zoledronic acid inj 0.05 mg p
 ; Etanercept SA1949
 ; Teriparatide SA1139
 ; Zolendronic Acid SA1780
-; Benzbromarone SA1537
+; Benzbromarone SA1537 xxx gone
 ; Tocilizumab 1858
 ; Secukinumab 2044
 
@@ -36,7 +36,7 @@ drugs: copy []
 parse data [
     some [
         thru {<a href='/latest/} copy sa to {'} thru " - " copy name to </a> (
-            ; dump name
+            dump name ;; debug
             if find wanted name [
                 append/only drugs reduce [name sa]
             ]
