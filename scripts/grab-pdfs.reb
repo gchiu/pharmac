@@ -39,7 +39,7 @@ parse data [
         thru {<a href='/latest/} copy sa to {'} thru " - " copy name to </a> (
             dump name ;; debug
             if find wanted name [
-                append/only drugs reduce [name sa]
+                append/only drugs [name sa] ; no longer needs reduce, append does this now
             ]
         )
     ]
