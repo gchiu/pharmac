@@ -51,13 +51,20 @@ parse data [
 ; download each pdf and save it to the local filesystem 
 print "downloading pdfs"
 for-each pair drugs [
+	?? pair
     probe pair/1
+    ?? 2
     print unspaced [base pair/2]
+    ?? 3
     location1: to url! join base pair/2
+    ?? 4
     location2: join alternate-base pair/2
+    ?? 5
     file: if exists? location1 [ location1 ]
     else [ location2 ]
-    write to file! pair/2 read file
+    ?? 6
+	write to file! pair/2 read file
+	?? 7
 ]
 
 ; now convert each pdf to png and eps
