@@ -57,8 +57,14 @@ for-each pair drugs [
     file: if exists? location1 [ location1 ] else [ location2 ]
     dump pair
     dump file
+    temp: to file! pair/2
+    ?? 5
+    dump temp
+    ?? 6
+    read file
+    ?? 7
 	write to file! pair/2 read file
-	?? 7
+	?? 8
 ]
 
 ; now convert each pdf to png and eps
