@@ -1,8 +1,11 @@
 rebol [
     file: %grab-pdfs.reb
     name: "Grab PDFs"
-    date: 25-Jan-2020
+    date: [25-Jan-2020 1-Jul-2021]
     author: "Graham Chiu"
+    notes: {looks for the special authorities based on a list I provide.  Download those ones, split the resulting download pdf into single
+    	pages and then convert each page to PNG, EPS.  The final output of files of EPS, PDF and PNG are then available to be downloaded with a separate script
+    }
 ]
 
 ; Pharmac puts an index of all the Special authorities on this page
@@ -55,16 +58,7 @@ for-each pair drugs [
     location1: to url! join base pair/2
     location2: join alternate-base pair/2
     file: if exists? location1 [ location1 ] else [ location2 ]
-    dump pair
-    dump file
-    temp: to file! pair/2
-    ?? 5
-    dump temp
-    ?? 6
-    read file
-    ?? 7
-	write to file! pair/2 read file
-	?? 8
+    write to file! pair/2 read file
 ]
 
 ; now convert each pdf to png and eps
