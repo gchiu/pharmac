@@ -54,7 +54,7 @@ parse data [
 ; download each pdf and save it to the local filesystem 
 print "downloading pdfs"
 for-each pair drugs [
-    print unspaced [ pair/1 base pair/2]
+    print unspaced [ pair/1 ": " base pair/2]
     location1: to url! join base pair/2
     location2: join alternate-base pair/2
     file: if exists? location1 [ location1 ] else [ location2 ]
