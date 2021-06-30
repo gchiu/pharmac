@@ -58,7 +58,10 @@ for-each pair drugs [
     location1: to url! join base pair/2
     location2: join alternate-base pair/2
     file: if exists? location1 [ location1 ] else [ location2 ]
-    write to file! pair/2 read file
+    attempt [
+    	; the reads seem to be affected by timeouts so let's skip errors
+	write to file! pair/2 read file
+    ]
 ]
 
 ; now convert each pdf to png and eps
