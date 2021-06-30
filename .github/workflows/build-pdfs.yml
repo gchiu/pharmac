@@ -62,14 +62,14 @@ jobs:
         r3 scripts/grab-pdfs.reb
 
     - name: List outputs From Build Products
-      run: ls
+      run: ls scripts
 
     - name: Compress Images
       run: |
         mkdir images
-        mv *.pdf images/
-        mv *.eps images/
-        mv *.png images/
+        mv scripts/*.pdf images/
+        mv scripts/*.eps images/
+        mv scripts/*.png images/
         zip -r pdfs images/
         mv pdfs.zip images/
 
