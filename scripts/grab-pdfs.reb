@@ -61,6 +61,7 @@ for-each pair drugs [
     attempt [
     	; the reads seem to be affected by timeouts so let's skip errors
 	write to file! pair/2 read file
+	print spaced ["Success with" pair/1] 
     ]
 ]
 
