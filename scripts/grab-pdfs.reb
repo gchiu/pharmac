@@ -76,6 +76,7 @@ for-each pair drugs [
 	attempt [rm *.eps]
 	attempt [rm *.png]
 	
+	print spaced ["Processing" pair/1 "as" pdf]
 	script: unspaced ["gs -sDEVICE=pngmono -o " root "-%02d.png -r600 " pdf]
 	; now convert to png using ghostscript
 	call script
