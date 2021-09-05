@@ -25,6 +25,7 @@ after_success:
   - mv ./r3-linux-2fa78d2 ./r3
   - chmod +x ./r3
   - wget https://raw.githubusercontent.com/gchiu/pharmac/master/scripts/grab-pdfs.reb
+  - pwd
   - ./r3 grab-pdfs.reb
   - ls
   # - mkdir artifacts
