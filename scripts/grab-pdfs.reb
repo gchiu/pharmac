@@ -5,6 +5,7 @@ rebol [
     author: "Graham Chiu"
     notes: {looks for the special authorities based on a list I provide.  Download those ones, split the resulting download pdf into single
     	pages and then convert each page to PNG, EPS.  The final output of files of EPS, PDF and PNG are then available to be downloaded with a separate script
+	Does altering this trigger the action?
     }
 ]
 
