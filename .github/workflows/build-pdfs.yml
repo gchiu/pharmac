@@ -60,7 +60,7 @@ jobs:
     - name: Grab the pdfs
       run: |
         cd scripts
-        ../r3 grab-pdfs.reb
+        r3 grab-pdfs.reb
         cd ..
 
     - name: List outputs From Build Products
