@@ -17,7 +17,7 @@ base: to url! unspaced [https://schedule.pharmac.govt.nz/ now/year "/" next form
 alternate-base: https://schedule.pharmac.govt.nz/latest/
 
 ; these are the drugs we use and are interested in.  Check their page (pdfs) to see what other drugs are supported
-wanted: ["Adalimumab" "Etanercept" "Teriparatide" "Zoledronic acid inj 0.05 mg per ml, 100 ml" "Tocilizumab" "Secukinumab"]
+wanted: ["Adalimumab" "Etanercept" "Teriparatide" "Zoledronic acid inj 0.05 mg per ml, 100 ml" "Tocilizumab" "Secukinumab" "Upadacitinib"]
 
 ; as of August 2020 the pages are
 ; Adalimumab SA1950
@@ -27,6 +27,7 @@ wanted: ["Adalimumab" "Etanercept" "Teriparatide" "Zoledronic acid inj 0.05 mg p
 ; Benzbromarone SA1537 xxx gone
 ; Tocilizumab 1858
 ; Secukinumab 2044
+; Upadacitinib
 
 ; read the page and turn into text for parsing out the download links
 data: to text! read pdfs 
