@@ -4,8 +4,8 @@ rebol [
     date: [25-Jan-2020 1-Jul-2021]
     author: "Graham Chiu"
     notes: {looks for the special authorities based on a list I provide.  Download those ones, split the resulting download pdf into single
-    	pages and then convert each page to PNG, EPS.  The final output of files of EPS, PDF and PNG are then available to be downloaded with a separate script
-	Does altering this trigger the action?
+    pages and then convert each page to PNG, EPS.  The final output of files of EPS, PDF and PNG are then available to be downloaded with a separate script
+Does altering this trigger the action?
     }
 ]
 
@@ -30,7 +30,7 @@ wanted: ["Adalimumab" "Etanercept" "Teriparatide" "Zoledronic acid inj 0.05 mg p
 ; Upadacitinib
 
 ; read the page and turn into text for parsing out the download links
-data: to text! read pdfs 
+data: to text! read pdfs
 
 ; store the data as pairs here
 drugs: copy []
@@ -53,7 +53,7 @@ parse data [
 ; sample capture stored in the drugs block
 ; drugs [["Benzbromarone" "SA1537.pdf"] ["Teriparatide" "SA1139.pdf"] ["Adalimumab" "SA1847.pdf"] ["Etanercept" "SA1812.pdf"]]
 
-; download each pdf and save it to the local filesystem 
+; download each pdf and save it to the local filesystem
 print "downloading pdfs"
 for-each pair drugs [
     print unspaced [ pair/1 ": " base pair/2]
@@ -61,40 +61,40 @@ for-each pair drugs [
     location2: join alternate-base pair/2
     file: if exists? location1 [ location1 ] else [ location2 ]
     attempt [
-    	; the reads seem to be affected by timeouts so let's skip errors
-	write to file! pair/2 read file
-	print spaced ["Success with" pair/1] 
+    ; the reads seem to be affected by timeouts so let's skip errors
+write to file! pair/2 read file
+print spaced ["Success with" pair/1]
     ]
 ]
 
 ; now convert each pdf to png and eps
 print "converting pdfs to png and eps"
 for-each pair drugs [
-	; get the SAnnnn part of the pdf name
-	pdf: pair/2
-	root: copy/part pdf find pdf %.pdf
-	
-	; delete all extraneous png and eps files
-	attempt [rm *.eps]
-	attempt [rm *.png]
-	
-	print spaced ["Processing" pair/1 "as" pdf]
-	script: unspaced ["gs -sDEVICE=pngmono -o " root "-%02d.png -r600 " pdf]
-	; now convert to png using ghostscript
-	call script
-	
-	; script: unspaced ["gs sDEVICE=eps2write -sPAPERSIZE=a4 -o " root "-%02d.eps " pdf]
-	; split into separate pdfs eg. SA1234-01.pdf
-	call unspaced ["pdfseparate " pdf space root "-%02d.pdf"]
-	; now to convert each of the pdfs into eps
-	n: 1
-	forever [
-		if exists? filename: to file! unspaced [root "-" next form 100 + n %.pdf][
-			call unspaced ["pdftops -eps " filename]		
-		] else [break]
-		n: me + 1
-	]
-	call script
+; get the SAnnnn part of the pdf name
+pdf: pair/2
+root: copy/part pdf find pdf %.pdf
+
+; delete all extraneous png and eps files
+attempt [rm *.eps]
+attempt [rm *.png]
+
+print spaced ["Processing" pair/1 "as" pdf]
+script: unspaced ["gs -sDEVICE=pngmono -o " root "-%02d.png -r600 " pdf]
+; now convert to png using ghostscript
+call script
+
+; script: unspaced ["gs sDEVICE=eps2write -sPAPERSIZE=a4 -o " root "-%02d.eps " pdf]
+; split into separate pdfs eg. SA1234-01.pdf
+call unspaced ["pdfseparate " pdf space root "-%02d.pdf"]
+; now to convert each of the pdfs into eps
+n: 1
+forever [
+if exists? filename: to file! unspaced [root "-" next form 100 + n %.pdf][
+call unspaced ["pdftops -eps " filename]
+] else [break]
+n: me + 1
+]
+call script
 ]
 
 print "Finished job"
