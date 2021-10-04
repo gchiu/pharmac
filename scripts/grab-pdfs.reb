@@ -24,27 +24,17 @@ rebol [
 
 === LIST OF "WANTED" DRUGS WE ARE INTERESTED IN ===
 
-; Check their page (pdfs) to see what other drugs are supported
-;
-; As of August 2020 the pages are:
-;
-;     Adalimumab SA1950
-;     Etanercept SA1949
-;     Teriparatide SA1139
-;     Zolendronic Acid SA1780
-;     Benzbromarone SA1537 xxx gone
-;     Tocilizumab 1858
-;     Secukinumab 2044
-;     Upadacitinib
+; Check their page (pdfs) to see what other drugs are supported.  Comments are
+; the SA numbers as of Oct 2021.  (Benzbromarone SA1537 is now gone)
 ;
 wanted: [
-    "Adalimumab"
-    "Etanercept"
-    "Teriparatide"
-    "Zoledronic acid inj 0.05 mg per ml, 100 ml"
-    "Tocilizumab"
-    "Secukinumab"
-    "Upadacitinib"
+    "Adalimumab"  ; SA2049
+    "Etanercept"  ; SA2048
+    "Teriparatide"  ; SA1139
+    "Zoledronic acid inj 0.05 mg per ml, 100 ml"  ; SA1780
+    "Tocilizumab"  ; SA2078
+    "Secukinumab"  ; SA2044
+    "Upadacitinib"  ; SA2079
 ]
 
 
@@ -52,12 +42,14 @@ wanted: [
 
 ; Pharmac puts an index of all the Special authorities on this page
 ;
-pdfs: https://schedule.pharmac.govt.nz/SAForms.php
+index-url: https://schedule.pharmac.govt.nz/SAForms.php
 
 ; and this is their download directory
 ;
-base: to url! unspaced [https://schedule.pharmac.govt.nz/ now/year "/" next form (100 + now/month) "/01/"]
-alternate-base: https://schedule.pharmac.govt.nz/latest/
+base-url: join https://schedule.pharmac.govt.nz/ reduce [
+    now/year "/" next form (100 + now/month) "/01/"
+]
+alternate-base-url: https://schedule.pharmac.govt.nz/latest/
 
 
 === PARSE WEB PAGE AND EXTRACT LINKS ===
@@ -69,22 +61,23 @@ alternate-base: https://schedule.pharmac.govt.nz/latest/
 ; sample capture stored in the drugs block
 ;
 ;     drugs: [
-;         ["Benzbromarone" "SA1537.pdf"]
-;         ["Teriparatide" "SA1139.pdf"]
-;         ["Adalimumab" "SA1847.pdf"]
-;         ["Etanercept" "SA1812.pdf"]
+;         "Benzbromarone" "SA1537.pdf"
+;         "Teriparatide" "SA1139.pdf"
+;         "Adalimumab" "SA1847.pdf"
+;         "Etanercept" "SA1812.pdf"
 ;     ]
-
-data: to text! read pdfs
 
 drugs: copy []
 
-parse data [
+parse (to text! read index-url) [
     some [
-        thru {<a href='/latest/} copy sa to {'} thru " - " copy name to </a> (
-            dump name ;; debug
-            if find wanted name [
-                append/only drugs reduce [name sa]
+        thru {<a href='/latest/}
+        copy pdfname to {'}
+        thru " - "
+        copy drugname to {</a>} (
+            print ["In index:" drugname]
+            if find wanted drugname [
+                append/line drugs reduce [drugname pdfname]
             ]
         )
     ]
@@ -95,16 +88,15 @@ parse data [
 
 print "downloading pdfs"
 
-for-each pair drugs [
-    print unspaced [ pair/1 ": " base pair/2]
-    location1: to url! join base pair/2
-    location2: join alternate-base pair/2
-    file: if exists? location1 [ location1 ] else [ location2 ]
-    attempt [
-        ; the reads seem to be affected by timeouts so let's skip errors
-        write to file! pair/2 read file
-        print spaced ["Success with" pair/1]
-    ]
+for-each [drugname pdfname] drugs [
+    location1: join base-url pdfname
+    location2: join alternate-base-url pdfname
+
+    url: if exists? location1 [ location1 ] else [ location2 ]
+    print [drugname ":" url]
+
+    write to file! pdfname read url
+    print ["Success with" pdfname]
 ]
 
 
@@ -112,25 +104,29 @@ for-each pair drugs [
 
 print "converting pdfs to png and eps"
 
-for-each pair drugs [
+for-each [drugname pdfname] drugs [
     ; get the SAnnnn part of the pdf name
-    pdf: pair/2
-    root: copy/part pdf find pdf %.pdf
+    root: uparse pdfname [between <here> ".pdf"]
 
     ; delete all extraneous png and eps files
     attempt [rm *.eps]
     attempt [rm *.png]
 
-    print spaced ["Processing" pair/1 "as" pdf]
+    print ["Processing" drugname "as" pdfname]
 
     ; Convert to individual pages of .PNG and .EPS using ghostscript ("gs")
     ;
     ; The `%02d` is a printf()-style format instruction, asking it to make the
     ; integer page number (%d) represented as 2 digits (%02d)
 
-    call [gs -sDEVICE=pngmono -o (join root "-%02d.png") -r600 (pdf)]
+    call [
+        gs -sDEVICE=pngmono -o (join root "-%02d.png") -r600 (pdfname)
+    ]
 
-    call [gs -sDEVICE=eps2write -sPAPERSIZE=a4 -o (join root "-%02d.eps") (pdf)]
+    call [
+        gs -sDEVICE=eps2write -sPAPERSIZE=a4
+            -o (join root "-%02d.eps") (pdfname)
+    ]
 ]
 
 print "Finished job"
