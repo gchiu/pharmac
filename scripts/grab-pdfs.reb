@@ -119,32 +119,35 @@ for-each pair drugs [
 
     print spaced ["Processing" pair/1 "as" pdf]
 
-    ; convert to png using ghostscript
+    ; Convert to several pages of png using ghostscript.  This works.
     ;
-    script: unspaced ["gs -sDEVICE=pngmono -o " root "-%02d.png -r600 " pdf]
-    call script
+    ; The `%02d` is a printf()-style format instruction, asking it to make the
+    ; integer page number (%d) represented as 2 digits (%02d)
+    ;
+    call [gs -sDEVICE=pngmono -o (join root "-%02d.png") -r600 (pdf)]
 
-    ; !!! This was commented out
+    ; Unfortunately ghostscript doesn't seem to want to do the bulk page
+    ; conversion with a matching call to `gs sDEVICE=eps2write -sPAPERSIZE=a4`.
     ;
-    comment [
-        script: unspaced ["gs sDEVICE=eps2write -sPAPERSIZE=a4 -o " root "-%02d.eps " pdf]
-    ]
-
-    ; split into separate pdfs eg. SA1234-01.pdf
+  if true [
+    call [gs -sDEVICE=eps2write -sPAPERSIZE=a4 -o (join root "-%02d.eps") (pdf)]
+  ] else [
     ;
-    call unspaced ["pdfseparate " pdf space root "-%02d.pdf"]
+    ; Split into separate pdfs eg. SA1234-01.pdf, see above for `%02d` meaning.
+    ;
+    call [pdfseparate (pdf) (join root "-%02d.pdf")]
 
     ; now to convert each of the pdfs into eps
     n: 1
     forever [
         if exists? filename: to file! unspaced [root "-" next form 100 + n %.pdf] [
-            call unspaced ["pdftops -eps " filename]
+            call [pdftops -eps (filename)]
         ] else [
             break
         ]
         n: me + 1
     ]
-    call script
+  ]
 ]
 
 print "Finished job"
