@@ -148,5 +148,3 @@ for-each pair drugs [
 ]
 
 print "Finished job"
-
-quit
