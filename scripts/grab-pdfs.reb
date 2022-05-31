@@ -92,6 +92,11 @@ for-each [drugname pdfname] drugs [
     location1: join base-url pdfname
     location2: join alternate-base-url pdfname
 
+    dump location1
+    print type-of location1
+    dump location2
+    print type-of location2
+
     url: if exists? location1 [ location1 ] else [ location2 ]
     print [drugname ":" url]
 
