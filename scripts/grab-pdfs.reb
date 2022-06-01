@@ -55,6 +55,8 @@ alternate-base-url: https://schedule.pharmac.govt.nz/latest/
 === PARSE WEB PAGE AND EXTRACT LINKS ===
 
 ; this is what we have to parse out .. we want the pdf name, and the drug name
+; <td><a href='/latest/SA2102.pdf' target='_blank' title='SA2102 - 15 pages, 80 KB'>SA2102 [PDF]</a></td>
+; <td><a href='/ScheduleOnline.php?osq=Adalimumab'>Adalimumab (Amgevita)</a></td>
 ;
 ; <td><a href='/latest/SA1847.pdf'>SA1847 - Adalimumab</a> (20 pages, 235 KB)</td>
 ;
@@ -73,8 +75,8 @@ parse (to text! read index-url) [
     some [
         thru {<a href='/latest/}
         copy pdfname to {'}
-        thru " - "
-        copy drugname to {</a>} (
+        thru "/ScheduleOnline.php?osq="
+        copy drugname to {'} (
             print ["In index:" drugname]
             if find wanted drugname [
                 append/line drugs reduce [drugname pdfname]
