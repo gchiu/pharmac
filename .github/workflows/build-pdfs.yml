@@ -55,7 +55,7 @@ jobs:
       with:
         checked: true
 
- #====# INSTALL R3 INTERPRETER #=============================================#
+ #====# DOWNLOAD AND COMPRESS IMAGES #=======================================#
 
     - name: Grab the pdfs
       run: |
