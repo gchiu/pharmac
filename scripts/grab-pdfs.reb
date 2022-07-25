@@ -46,7 +46,7 @@ index-url: https://schedule.pharmac.govt.nz/SAForms.php
 
 ; and this is their download directory
 ;
-base-url: join https://schedule.pharmac.govt.nz/ reduce [
+base-url: join https://schedule.pharmac.govt.nz/ spread reduce [
     now/year "/" next form (100 + now/month) "/01/"
 ]
 alternate-base-url: https://schedule.pharmac.govt.nz/latest/
@@ -74,12 +74,12 @@ drugs: copy []
 parse (to text! read index-url) [
     some [
         thru {<a href='/latest/}
-        copy pdfname to {'}
+        pdfname: across to {'}
         thru "/ScheduleOnline.php?osq="
-        copy drugname to {'} (
+        drugname: across to {'} (
             print ["In index:" drugname]
             if find wanted drugname [
-                append/line drugs reduce [drugname pdfname]
+                append/line drugs spread reduce [drugname pdfname]
             ]
         )
     ]
@@ -113,7 +113,7 @@ print "converting pdfs to png and eps"
 
 for-each [drugname pdfname] drugs [
     ; get the SAnnnn part of the pdf name
-    root: uparse pdfname [between <here> ".pdf"]
+    root: parse pdfname [between <here> ".pdf"]
 
     ; delete all extraneous png and eps files
     attempt [rm *.eps]
