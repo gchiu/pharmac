@@ -116,8 +116,9 @@ for-each [drugname pdfname] drugs [
     root: parse pdfname [between <here> ".pdf"]
 
     ; delete all extraneous png and eps files
-    attempt [rm *.eps]
-    attempt [rm *.png]
+
+    call/shell [rm *.eps]
+    call/shell [rm *.png]
 
     print ["Processing" drugname "as" pdfname]
 
