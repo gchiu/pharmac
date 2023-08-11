@@ -66,14 +66,13 @@ jobs:
     - name: List outputs From Build Products
       run: ls scripts
 
-    - name: Compress Images
+    - name: Compress Images (not used by artifact, but used to upload to S3)
       run: |
         mkdir images
         mv scripts/*.pdf images/
         mv scripts/*.eps images/
         mv scripts/*.png images/
         zip -r pdfs images/
-        mv pdfs.zip images/
 
     - name: List Final Contents of Images Directory
       run: ls images/
@@ -89,11 +88,18 @@ jobs:
     #
     # https://github.com/actions/upload-artifact
     #
-    - name: Upload Zip file to Temporary Artifact Storage on GitHub Actions
-      uses: actions/upload-artifact@v2
+    # A long-term complaint about Github's artifact uploading is that it can't
+    # upload a single file without zipping it--so a .zip will be zipped again.
+    #
+    # https://github.com/actions/upload-artifact/issues/14#issuecomment-662803487
+    #
+    # So we make an artifact out of the whole images directory itself.
+    #
+    - name: Upload Files to Temporary Artifact Storage on GitHub Actions
+      uses: actions/upload-artifact@v3
       with:
-        name: pdfs.zip
-        path: images/pdfs.zip
+        name: pdfs  # will be compressed into a .zip as pdfs.zip
+        path: images/
 
 #====# UPLOAD IMAGES TO S3 #==================================================#
 
@@ -117,7 +123,6 @@ jobs:
     - name: Deploy Images
       if: github.ref == 'refs/heads/master'  # see notes on DEPLOY STEPS
       run: |
-        cd images
         mime_type="application/zip"
 
         local=pdfs.zip
