@@ -84,6 +84,7 @@ parse (to text! read index-url) [
             ]
         )
     ]
+    accept (true)  ; no need to reach end
 ]
 
 
