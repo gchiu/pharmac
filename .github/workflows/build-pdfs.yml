@@ -36,6 +36,9 @@ jobs:
 
  #====# INSTALL PACKAGES #===================================================#
 
+    - name: Update APT  # without this mirrors can fail
+      run: sudo apt update
+
     - name: Install Poppler Utilities
       run: sudo apt install poppler-utils
 
