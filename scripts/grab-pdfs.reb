@@ -21,6 +21,15 @@ rebol [
     }
 ]
 
+
+=== DELETE ALL EXTRANEOUS PNG AND EPS FILES ===
+
+; `rm -f` means no error if nonexistent
+
+call/shell [rm -f *.eps]
+call/shell [rm -f *.png]
+
+
 === CURL SHIM FOR IF REN-C READ AND EXISTS? CAN'T WORK ===
 
 ; Ren-C's bespoke TLS implementation is a usermode dialected experiment that
@@ -148,11 +157,6 @@ print "converting pdfs to png and eps"
 for-each [drugname pdfname] drugs [
     ; get the SAnnnn part of the pdf name
     root: parse pdfname [between <here> ".pdf"]
-
-    ; delete all extraneous png and eps files (`rm -f` no error if nonexistent)
-
-    call/shell [rm -f *.eps]
-    call/shell [rm -f *.png]
 
     print ["Processing" drugname "as" pdfname]
 
