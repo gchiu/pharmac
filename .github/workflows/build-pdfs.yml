@@ -66,8 +66,8 @@ jobs:
         r3 grab-pdfs.reb
         cd ..
 
-    - name: List outputs From Build Products
-      run: ls scripts
+    - name: List outputs (with sizes) From Build Products
+      run: ls -alF scripts
 
     - name: Compress Images (not used by artifact, but used to upload to S3)
       run: |

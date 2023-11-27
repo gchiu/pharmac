@@ -1,7 +1,7 @@
 rebol [
     File: %grab-pdfs.reb
     Name: Grab-PDFs
-    Date: [25-Jan-2020 1-Jul-2021]
+    Date: 1-Jul-2021
     Author: "Graham Chiu"
     Description: {
         Looks for the special authorities based on a list I provide.
@@ -19,6 +19,38 @@ rebol [
       * Other related tools for this task are `pdfseparate` and `pdftops -eps`
         which may be useful if there are problems with GhostScript.
     }
+]
+
+=== CURL SHIM FOR IF REN-C READ AND EXISTS? CAN'T WORK ===
+
+; Ren-C's bespoke TLS implementation is a usermode dialected experiment that
+; is hard to maintain in the ever-evolving world of crypto.  Pharmac changes
+; their crypto suites to stay unfortunately-up-to-date.  This falls through
+; to curl if it has to.
+
+read: enclose :lib.read func [f [frame!]] [
+    let source: f.source
+    sys.util.rescue [
+        return do f
+    ]
+    let result: make binary! 1000
+    call/output [curl -L (source)] result  ; -L follows redirects
+    return result
+]
+
+exists?: enclose :lib.exists? func [f [frame!]] [
+    let target: f.target
+    sys.util.rescue [
+        return do f
+    ]
+    let result: make text! 1000
+    call/output [curl -L --head (target)] result  ; -L follows redirects
+    return parse result [
+        thru space ["200" [space | newline]]  ; e.g. "HTTP/1.1 200 OK"
+        accept (true)
+        |
+        accept (false)
+    ]
 ]
 
 
@@ -72,7 +104,7 @@ alternate-base-url: https://schedule.pharmac.govt.nz/latest/
 
 drugs: copy []
 
-parse (to text! read index-url) [
+parse (as text! read index-url) [
     some [
         thru {<a href='/latest/}
         pdfname: across to {'}
@@ -117,10 +149,10 @@ for-each [drugname pdfname] drugs [
     ; get the SAnnnn part of the pdf name
     root: parse pdfname [between <here> ".pdf"]
 
-    ; delete all extraneous png and eps files
+    ; delete all extraneous png and eps files (`rm -f` no error if nonexistent)
 
-    call/shell [rm *.eps]
-    call/shell [rm *.png]
+    call/shell [rm -f *.eps]
+    call/shell [rm -f *.png]
 
     print ["Processing" drugname "as" pdfname]
 
