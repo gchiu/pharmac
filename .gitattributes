@@ -1,0 +1,6 @@
+# Treat .r files as plain text to disable syntax highlighting
+#
+# (syntax highlighting of "keywords" never made sense in Rebol,
+# and Ren-C has syntax differences which aren't understood)
+
+*.r linguist-language=Text

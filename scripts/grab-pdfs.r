@@ -1,5 +1,5 @@
 Rebol [
-    file: %grab-pdfs.reb
+    file: %grab-pdfs.r
     name: Grab-PDFs
     date: 1-Jul-2021
     author: "Graham Chiu"

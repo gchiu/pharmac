@@ -70,7 +70,7 @@ jobs:
     - name: Grab the pdfs
       run: |
         cd scripts
-        r3 grab-pdfs.reb
+        r3 grab-pdfs.r
         cd ..
 
 
