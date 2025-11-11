@@ -28,25 +28,31 @@ jobs:
     # Steps represent a sequence of tasks that are executed as part of the job
     steps:
 
+
  #====# CHECKOUT STEPS #=====================================================#
 
     # Checks-out repository under $GITHUB_WORKSPACE, so your job can access it
 
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
+
 
  #====# INSTALL PACKAGES #===================================================#
 
     - name: Update APT  # without this mirrors can fail
       run: sudo apt update
 
+
     - name: Install Poppler Utilities
       run: sudo apt install poppler-utils
+
 
     - name: Install Ghostscript
       run: sudo apt install ghostscript
 
+
     - name: Install Rename
       run: sudo apt install rename
+
 
  #====# INSTALL REN-C INTERPRETER #==========================================#
 
@@ -58,6 +64,7 @@ jobs:
       with:
         checked: true
 
+
  #====# DOWNLOAD AND COMPRESS IMAGES #=======================================#
 
     - name: Grab the pdfs
@@ -66,8 +73,10 @@ jobs:
         r3 grab-pdfs.reb
         cd ..
 
+
     - name: List outputs (with sizes) From Build Products
       run: ls -alF scripts
+
 
     - name: Compress Images (not used by artifact, but used to upload to S3)
       run: |
@@ -77,8 +86,10 @@ jobs:
         mv scripts/*.png images/
         zip -r pdfs images/
 
+
     - name: List Final Contents of Images Directory
       run: ls images/
+
 
 #====# MAKE IMAGES AVAILABLE AS BUILD ARTIFACT #==============================#
 
@@ -99,10 +110,11 @@ jobs:
     # So we make an artifact out of the whole images directory itself.
     #
     - name: Upload Files to Temporary Artifact Storage on GitHub Actions
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: pdfs  # will be compressed into a .zip as pdfs.zip
         path: images/
+
 
 #====# UPLOAD IMAGES TO S3 #==================================================#
 
@@ -117,11 +129,12 @@ jobs:
     #
     - name: Configure AWS Credentials
       if: github.ref == 'refs/heads/master'  # see notes on DEPLOY STEPS
-      uses: aws-actions/configure-aws-credentials@v1
+      uses: aws-actions/configure-aws-credentials@v4
       with:
         aws-access-key-id: ${{ secrets.EIGHTH_AWS_ACCESS_KEY }}
         aws-secret-access-key: ${{ secrets.EIGHTH_AWS_SECRET_KEY }}
         aws-region: us-east-1
+
 
     - name: Deploy Images
       if: github.ref == 'refs/heads/master'  # see notes on DEPLOY STEPS
