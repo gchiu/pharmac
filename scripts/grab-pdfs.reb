@@ -1,9 +1,9 @@
-rebol [
-    File: %grab-pdfs.reb
-    Name: Grab-PDFs
-    Date: 1-Jul-2021
-    Author: "Graham Chiu"
-    Description: {
+Rebol [
+    file: %grab-pdfs.reb
+    name: Grab-PDFs
+    date: 1-Jul-2021
+    author: "Graham Chiu"
+    description: --[
         Looks for the special authorities based on a list I provide.
 
         Download those ones, split the resulting download pdf into single
@@ -14,11 +14,11 @@ rebol [
         downloaded via GitHub artifacts:
 
         https://docs.github.com/en/actions/advanced-guides/storing-workflow-data-as-artifacts
-    }
-    Notes: {
+    ]--
+    notes: --[
       * Other related tools for this task are `pdfseparate` and `pdftops -eps`
         which may be useful if there are problems with GhostScript.
-    }
+    ]--
 ]
 
 
@@ -26,41 +26,8 @@ rebol [
 
 ; `rm -f` means no error if nonexistent
 
-call/shell [rm -f *.eps]
-call/shell [rm -f *.png]
-
-
-=== CURL SHIM FOR IF REN-C READ AND EXISTS? CAN'T WORK ===
-
-; Ren-C's bespoke TLS implementation is a usermode dialected experiment that
-; is hard to maintain in the ever-evolving world of crypto.  Pharmac changes
-; their crypto suites to stay unfortunately-up-to-date.  This falls through
-; to curl if it has to.
-
-read: enclose :lib.read func [f [frame!]] [
-    let source: f.source
-    sys.util.rescue [
-        return do f
-    ]
-    let result: make binary! 1000
-    call/output [curl -L (source)] result  ; -L follows redirects
-    return result
-]
-
-exists?: enclose :lib.exists? func [f [frame!]] [
-    let target: f.target
-    sys.util.rescue [
-        return do f
-    ]
-    let result: make text! 1000
-    call/output [curl -L --head (target)] result  ; -L follows redirects
-    return parse result [
-        thru space ["200" [space | newline]]  ; e.g. "HTTP/1.1 200 OK"
-        accept (true)
-        |
-        accept (false)
-    ]
-]
+call:shell [rm -f *.eps]
+call:shell [rm -f *.png]
 
 
 === LIST OF "WANTED" DRUGS WE ARE INTERESTED IN ===
@@ -88,8 +55,8 @@ index-url: https://schedule.pharmac.govt.nz/SAForms.php
 
 ; and this is their download directory
 ;
-base-url: join https://schedule.pharmac.govt.nz/ spread reduce [
-    now/year "/" next form (100 + now/month) "/01/"
+base-url: join https://schedule.pharmac.govt.nz/ [
+    now:year "/" next form (100 + now:month) "/01/"
 ]
 alternate-base-url: https://schedule.pharmac.govt.nz/latest/
 
@@ -111,21 +78,23 @@ alternate-base-url: https://schedule.pharmac.govt.nz/latest/
 ;         "Etanercept" "SA1812.pdf"
 ;     ]
 
+print ["Parsing" index-url "..."]
+
 drugs: copy []
 
 parse (as text! read index-url) [
     some [
-        thru {<a href='/latest/}
-        pdfname: across to {'}
+        thru -[<a href='/latest/]-
+        let pdfname: across to -[']-
         thru "/ScheduleOnline.php?osq="
-        drugname: across to {'} (
+        let drugname: across to -[']- (
             print ["In index:" drugname]
             if find wanted drugname [
-                append/line drugs spread reduce [drugname pdfname]
+                append:line drugs spread reduce [drugname pdfname]
             ]
         )
     ]
-    accept (true)  ; no need to reach end
+    accept (okay)  ; no need to reach end
 ]
 
 
@@ -134,15 +103,15 @@ parse (as text! read index-url) [
 print "downloading pdfs"
 
 for-each [drugname pdfname] drugs [
-    location1: join base-url pdfname
-    location2: join alternate-base-url pdfname
+    let location1: join base-url pdfname
+    let location2: join alternate-base-url pdfname
 
     dump location1
-    print form type of location1
+    print [to word! type of location1]
     dump location2
-    print form type of location2
+    print [to word! type of location2]
 
-    url: if exists? location1 [ location1 ] else [ location2 ]
+    let url: if exists? location1 [ location1 ] else [ location2 ]
     print [drugname ":" url]
 
     write to file! pdfname read url
@@ -156,7 +125,7 @@ print "converting pdfs to png and eps"
 
 for-each [drugname pdfname] drugs [
     ; get the SAnnnn part of the pdf name
-    root: parse pdfname [between <here> ".pdf"]
+    let root: parse pdfname [between <here> ".pdf"]
 
     print ["Processing" drugname "as" pdfname]
 
